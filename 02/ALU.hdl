@@ -59,7 +59,11 @@ CHIP ALU {
    	
    	// Negating output
    	Not16(in=fResult, out=notFResult);
-   	Mux16(a=fResult, b=notFResult, sel=no, out=out);
+   	Mux16(a=fResult, b=notFResult, sel=no, out=out, out[15]=ng, out[0..7]=outA, out[8..15]=outB);
    	
-
+   	// Status pins
+   	Or8Way(in=outA, out=orOutA);
+   	Or8Way(in=outB, out=orOutB);
+   	Or(a=orOutA, b=orOutB, out=orOut);
+   	Not(in=orOut, out=zr);
 }
