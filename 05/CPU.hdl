@@ -39,5 +39,40 @@ CHIP CPU {
         pc[15];          // address of next instruction
 
     PARTS:
-    // Put your code here:
+    ALU(x=aluDIn, y=aluAMIn,
+    	zx=instruction[11], nx=instruction[10],
+    	zy=instruction[9], ny=instruction[8],
+    	f=instruction[7], no=instruction[6],
+//    	zx=zx, nx=nx,
+//    	zy=zy, ny=ny,
+//    	f=f, no=no,
+    	out=outM, out=aluOutToRegDIn, out=aluOutToMuxIn,
+    	zr=aluZr, ng=aluNg);
+    ARegister(in=regAIn, load=regALoad,
+    	out[0..14]=addressM, out=regAOutToMuxIn, out=regAOutToPC);
+    DRegister(in=aluOutToRegDIn, load=regDLoad,
+    	out=aluDIn);
+    PC(in=regAOutToPC, load=pcLoad, inc=true, reset=reset,
+    	out[0..14]=pc);
+    
+    // Select value for A register, based on 'i' in instruction 'i xx a cccccc ddd jjj':
+    //  0 (A-instruction): the instruction itself
+    //  1 (C-instruction): ALU output
+    Mux16(a=instruction, b=aluOutToMuxIn, sel=instruction[15], out=regAIn);
+    
+    // Select A or M, based on 'a' in the instruction 'i xx a cccccc ddd jjj'
+    Mux16(a=regAOutToMuxIn, b=inM, sel=selAM, out=aluAMIn);
+    And(a=instruction[12], b=instruction[15], out=selAM);
+
+//	Controller(instruction=instruction, ng=aluNg, zr=aluZr,
+//		zx=zx, nx=nx, zy=zy, ny=ny, f=f, no=no,
+//		storeA=regALoad, storeD=regDLoad, storeM=writeM,
+//		jump=pcLoad);
+    
+    StoreLogic(i=instruction[15], dest=instruction[3..5],
+    	storeA=regALoad, storeD=regDLoad, storeM=writeM);
+   
+    JumpLogic(i=instruction[15],
+    	jlt=instruction[2], jeq=instruction[1], jgt=instruction[0],
+    	zr=aluZr, ng=aluNg, jump=pcLoad);
 }

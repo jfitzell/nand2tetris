@@ -1,0 +1,24 @@
+CHIP JumpLogic {
+
+    IN  i,    // instruction type (0=A, 1=C)
+    	jlt,  // Jump if < 0 ?
+        jeq,  // Jump if = 0 ?
+        jgt,  // Jump if > 0 ?
+        zr,   // Is value = 0 ?
+        ng;   // Is value < 0 ?
+
+    OUT jump;
+
+    PARTS:
+	   And(a=jlt, b=ng, out=ltAndNeg);
+	   And(a=jeq, b=zr, out=eqAndZero);
+	   
+	   Or(a=zr, b=ng, out=notPos);
+	   Not(in=notPos, out=pos);
+	   And(a=jgt, b=pos, out=gtAndPos);
+	   
+	   And(a=i, b=ltAndNeg, out=jumpLt);
+	   And(a=i, b=eqAndZero, out=jumpEq);
+	   And(a=i, b=gtAndPos, out=jumpGt);
+	   Or8Way(in[0]=jumpLt, in[1]=jumpEq, in[2]=jumpGt, out=jump);
+}

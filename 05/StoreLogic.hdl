@@ -1,0 +1,21 @@
+CHIP StoreLogic {
+
+    IN  i,       // instruction type code (0=A, 1=C)
+    	dest[3]; // destination specification
+
+    OUT storeA,  // should the computed value be stored in the A Register?
+    	storeD,  // should the computed value be stored in the D Register?
+    	storeM;  // should the computed value be stored in Memory[A] (M)?
+
+	PARTS:
+    // Connect AND(i, d1) of the instruction 'i xx a cccccc ddd jjj' to regALoad
+    And(a=i, b=dest[2], out=cInstAndUpdateRegA);
+    Not(in=i, out=aInstruction);
+    Or(a=cInstAndUpdateRegA, b=aInstruction, out=storeA);
+    
+    // Connect AND(i, d2) of the instruction 'i xx a cccccc ddd jjj' to regDLoad
+    And(a=i, b=dest[1], out=storeD);
+    
+    // Connect AND(i, d3) of the instruction 'i xx a cccccc ddd jjj' to writeM
+    And(a=i, b=dest[0], out=storeM);
+}
